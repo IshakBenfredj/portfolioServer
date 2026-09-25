@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Product = require('../models/product');
 const { uploadImage, uploadMultipleImages } = require('../uploadImage');
 
@@ -17,6 +18,9 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(404).json({ message: "Product not found" });
+    }
     const product = await Product.findByIdAndUpdate(
       id,
       { $inc: { views: 1 } },

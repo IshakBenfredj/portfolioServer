@@ -8,6 +8,8 @@ const Lesson = require("../models/lesson.js");
 const Testimonial = require("../models/testimonial.js");
 const Product = require("../models/product.js");
 const Order = require("../models/order.js");
+const VisitorLog = require("../models/visitorLog.js");
+const ReviewInvite = require("../models/reviewInvite.js");
 
 const adminLogin = async (req, res) => {
   try {
@@ -51,6 +53,9 @@ const adminLogin = async (req, res) => {
 
 const getAdminStats = async (req, res) => {
   try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const [
       totalProjects,
       totalServices,
@@ -60,8 +65,13 @@ const getAdminStats = async (req, res) => {
       totalComments,
       totalLessons,
       totalTestimonials,
+      verifiedTestimonials,
       totalProducts,
       totalOrders,
+      totalVisitorLogs,
+      todayVisitorLogs,
+      uniqueVisitorsCount,
+      pendingInvites,
       projectsList,
       recentMessages,
       recentOrders,
@@ -74,14 +84,20 @@ const getAdminStats = async (req, res) => {
       Comment.countDocuments(),
       Lesson.countDocuments(),
       Testimonial.countDocuments(),
+      Testimonial.countDocuments({ isVerified: true }),
       Product.countDocuments(),
       Order.countDocuments(),
+      VisitorLog.countDocuments(),
+      VisitorLog.countDocuments({ timestamp: { $gte: startOfToday } }),
+      VisitorLog.distinct("ipHash").then((res) => res.length),
+      ReviewInvite.countDocuments({ isUsed: false }),
       Portfolio.find({}, "views title"),
       Message.find().sort({ createdAt: -1 }).limit(5),
       Order.find().sort({ createdAt: -1 }).limit(5),
     ]);
 
-    const totalViews = projectsList.reduce((acc, curr) => acc + (curr.views || 0), 0);
+    const projectViews = projectsList.reduce((acc, curr) => acc + (curr.views || 0), 0);
+    const totalViews = Math.max(totalVisitorLogs, projectViews);
 
     return res.status(200).json({
       success: true,
@@ -94,9 +110,13 @@ const getAdminStats = async (req, res) => {
         totalComments,
         totalLessons,
         totalTestimonials,
+        verifiedTestimonials,
         totalProducts,
         totalOrders,
         totalViews,
+        todayViews: todayVisitorLogs,
+        uniqueVisitors: uniqueVisitorsCount,
+        pendingInvites,
       },
       recentMessages,
       recentOrders,

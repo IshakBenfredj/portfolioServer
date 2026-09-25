@@ -16,6 +16,9 @@ const commentsRoutes = require("./routes/comments-routes");
 const lessonsRoutes = require("./routes/lessons-routes");
 const productsRoutes = require("./routes/products-routes");
 const ordersRoutes = require("./routes/orders-routes");
+const meetingsRoutes = require("./routes/meetings-routes");
+const categoryRoutes = require("./routes/category-routes");
+const analyticsRoutes = require("./routes/analytics-routes");
 const adminRoutes = require("./routes/admin-routes");
 const job = require("./cron");
 
@@ -53,6 +56,9 @@ app.use("/comments", commentsRoutes);
 app.use("/lessons", lessonsRoutes);
 app.use("/products", productsRoutes);
 app.use("/orders", ordersRoutes);
+app.use("/meetings", meetingsRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/analytics", analyticsRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URL)
